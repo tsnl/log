@@ -6,5 +6,5 @@ auto main() -> int {
     tsnl::log::warning() << "This is a warning message.";
     tsnl::log::error() << "This is an error message.";
     tsnl::log::fatal() << "This is a fatal message: terminating.";
-    return 0;
+    return 0; // never executes with default std::terminate
 }
