@@ -19,15 +19,27 @@ auto main() -> int {
 
 ### Bazel
 
-```
+```starlark
 # in MODULE.bazel
 
-bazel_dep(name = "tsnl/log")
+bazel_dep(name = "tsnl.log")
 git_override(
-    module_name = "tsnl/log",
+    module_name = "tsnl.log",
     remote = "https://github.com/tsnl/log",
     branch = "main",
     # commit = "..."	# -> you can set a fixed commit if you'd like.
+)
+```
+
+```starlark
+# in BUILD.bazel
+
+cc_library(
+    name = "my_awesome_cpp_library",
+    deps = [
+        # ...
+        "@tsnl.log"
+    ]
 )
 ```
 
