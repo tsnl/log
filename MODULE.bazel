@@ -1,4 +1,4 @@
-module(name = "tsnl_log", version = "0.0.0")
+module(name = "tsnl.log", version = "0.0.0")
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
