@@ -1,5 +1,8 @@
 module(name = "tsnl.log", version = "0.0.0")
 
+# Toolchain:
+bazel_dep(name = "rules_cc", version = "0.1.1")
+
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
