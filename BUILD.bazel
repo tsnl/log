@@ -1,0 +1,13 @@
+cc_library(
+    name = "log",
+    srcs = ["include/tsnl/log.hpp"],
+    hdrs = ["include/tsnl/log.hpp"],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "eg001",
+    srcs = ["src/tsnl/examples/log/eg001.cpp"],
+    deps = [":log"],
+)
