@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <mutex>
 
 //
 // interface: log:
@@ -26,9 +27,11 @@ enum class level {
 };
 
 inline void set_min_level(level l);
+inline void set_locking_enabled(bool v);
 
 class logger {
     friend void set_min_level(level l);
+    friend void set_locking_enabled(bool v);
 
 public:
     explicit logger(level l);
@@ -46,8 +49,11 @@ public:
 private:
     bool active_;
     level level_;
+    std::unique_lock<std::mutex> lock_;
 
     inline static level min_level_ = level::info;
+    inline static bool locking_enabled_ = true;
+    inline static std::mutex mutex_;
 };
 
 } // namespace tsnl::log
@@ -100,7 +106,8 @@ namespace tsnl::log {
 
 logger::logger(level l)
 : active_(static_cast<int>(l) >= static_cast<int>(logger::min_level_)),
-  level_(l) {
+  level_(l),
+  lock_(locking_enabled_ and active_ ? std::unique_lock(mutex_) : std::unique_lock(mutex_, std::defer_lock)) {
     if (active_) {
         std::cerr << detail::bold << detail::level_to_color(level_) << detail::level_to_char(level_) << detail::reset
                   << ' ';
@@ -142,6 +149,10 @@ inline auto fatal() -> logger {
 
 inline void set_min_level(level l) {
     logger::min_level_ = l;
+}
+
+inline void set_locking_enabled(bool v) {
+    logger::locking_enabled_ = v;
 }
 
 } // namespace tsnl::log
