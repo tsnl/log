@@ -6,7 +6,7 @@ compile_commands_targets = [
 ]
 
 cc_library(
-    name = "log",
+    name = "tsnl.log",
     srcs = ["include/tsnl/log.hpp"],
     hdrs = ["include/tsnl/log.hpp"],
     includes = ["include"],
@@ -16,7 +16,7 @@ cc_library(
 cc_binary(
     name = "eg001",
     srcs = ["src/tsnl/examples/log/eg001.cpp"],
-    deps = [":log"],
+    deps = [":tsnl.log"],
 )
 
 #
