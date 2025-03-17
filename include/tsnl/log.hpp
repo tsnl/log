@@ -102,8 +102,8 @@ logger::logger(level l)
 : active_(static_cast<int>(l) >= static_cast<int>(logger::min_level_)),
   level_(l) {
     if (active_) {
-        std::cerr << detail::bold << detail::level_to_color(level_)
-                  << detail::level_to_char(level_) << detail::reset << ' ';
+        std::cerr << detail::bold << detail::level_to_color(level_) << detail::level_to_char(level_) << detail::reset
+                  << ' ';
     }
 }
 
