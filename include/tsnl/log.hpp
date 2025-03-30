@@ -35,8 +35,8 @@ class logger {
     friend void set_locking_enabled(bool v);
 
 public:
-    explicit logger(level l);
-    ~logger();
+    inline explicit logger(level l);
+    inline ~logger();
 
     logger(logger const&) = delete;
     logger(logger&&) = delete;
@@ -45,7 +45,7 @@ public:
     auto operator=(logger&&) -> logger& = delete;
 
     template <typename T>
-    auto operator<<(T const& value) -> logger&;
+    inline auto operator<<(T const& value) -> logger&;
 
 private:
     bool active_;
@@ -105,7 +105,7 @@ inline auto level_to_char(level lvl) -> char {
 
 namespace tsnl::log {
 
-logger::logger(level l)
+inline logger::logger(level l)
 : active_(static_cast<int>(l) >= static_cast<int>(logger::min_level_)),
   level_(l),
   lock_(locking_enabled_ and active_ ? std::unique_lock(mutex_) : std::unique_lock(mutex_, std::defer_lock)) {
@@ -115,7 +115,7 @@ logger::logger(level l)
     }
 }
 
-logger::~logger() {
+inline logger::~logger() {
     if (active_) {
         std::cerr << '\n';
     }
@@ -125,7 +125,7 @@ logger::~logger() {
 }
 
 template <typename T>
-auto logger::operator<<(T const& value) -> logger& {
+inline auto logger::operator<<(T const& value) -> logger& {
     if (active_) {
         std::cerr << value;
     }
