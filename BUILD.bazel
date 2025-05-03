@@ -3,7 +3,7 @@ load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 compile_commands_targets = [
-    ":log",
+    ":tsnl.log",
     ":eg001",
 ]
 
