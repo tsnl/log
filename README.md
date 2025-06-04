@@ -6,12 +6,12 @@ A single-header C++20 logging library. See [`include/tsnl/log.hpp`](include/tsnl
 #include <tsnl/log.hpp>
 
 auto main() -> int {
-    tsnl::log::set_min_level(tsnl::log::level::info);
+    tsnl::log::set_min_level(tsnl::log::level::debug);  // default min level is 'info'
+    tsnl::log::debug() << "This is a debug message.";
     tsnl::log::info() << "This is an info message.";
     tsnl::log::warning() << "This is a warning message.";
     tsnl::log::error() << "This is an error message.";
-    tsnl::log::fatal() << "This is a fatal message: terminating.";
-    return 0;	// never executes with default std::terminate
+    return 0;
 }
 ```
 

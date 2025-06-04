@@ -27,4 +27,8 @@ format:
 # targets:
 #
 
-default: # TODO: define your targets here
+default: eg001
+
+eg001:
+	bazelisk build //:eg001
+

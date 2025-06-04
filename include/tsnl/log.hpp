@@ -1,8 +1,9 @@
 #pragma once
 
-#include <exception>
+#include <atomic>
 #include <iostream>
 #include <mutex>
+#include <sstream>
 
 //
 // interface: log:
@@ -15,16 +16,16 @@ namespace tsnl::log {
 
 class logger;
 
+inline auto debug() -> logger;
 inline auto info() -> logger;
 inline auto warning() -> logger;
 inline auto error() -> logger;
-inline auto fatal() -> logger;
 
 enum class level {
+    debug,
     info,
     warning,
     error,
-    fatal
 };
 
 inline void set_min_level(level l);
@@ -50,10 +51,10 @@ public:
 private:
     bool active_;
     level level_;
-    std::unique_lock<std::mutex> lock_;
+    std::stringstream stream_;
 
     inline static level min_level_ = level::info;
-    inline static bool locking_enabled_ = true;
+    inline static std::atomic_bool locking_enabled_ = true;
     inline static std::mutex mutex_;
 };
 
@@ -67,36 +68,39 @@ namespace tsnl::log::detail {
 
 constexpr auto reset = "\033[0m";
 constexpr auto bold = "\033[1m";
-constexpr auto red = "\033[31m";
-constexpr auto yellow = "\033[33m";
-constexpr auto blue = "\033[34m";
+constexpr auto bold_red = "\033[31;1m";
+constexpr auto bold_yellow = "\033[33m";
+constexpr auto bold_blue = "\033[34;1m";
+constexpr auto faint_white = "\033[37;2m";
+constexpr auto faint_magenta = "\033[35;2m";
 
 inline auto level_to_color(level lvl) -> char const*;
 inline auto level_to_char(level lvl) -> char;
 
 inline auto level_to_color(level lvl) -> char const* {
     switch (lvl) {
+    case level::debug:
+        return faint_magenta;
     case level::info:
-        return blue;
+        return faint_white;
     case level::warning:
-        return yellow;
+        return bold_yellow;
     case level::error:
-    case level::fatal:
-        return red;
+        return bold_red;
     }
     return "";
 }
 
 inline auto level_to_char(level lvl) -> char {
     switch (lvl) {
+    case level::debug:
+        return 'D';
     case level::info:
-        return 'I';
+        return '>';
     case level::warning:
         return 'W';
     case level::error:
         return 'E';
-    case level::fatal:
-        return 'F';
     }
     return '?';
 }
@@ -107,29 +111,54 @@ namespace tsnl::log {
 
 inline logger::logger(level l)
 : active_(static_cast<int>(l) >= static_cast<int>(logger::min_level_)),
-  level_(l),
-  lock_(locking_enabled_ and active_ ? std::unique_lock(mutex_) : std::unique_lock(mutex_, std::defer_lock)) {
+  level_(l) {
     if (active_) {
-        std::cerr << detail::bold << detail::level_to_color(level_) << detail::level_to_char(level_) << detail::reset
-                  << ' ';
+        stream_ << detail::bold << detail::level_to_color(level_) << detail::level_to_char(level_) << detail::reset
+                << ' ';
     }
 }
 
 inline logger::~logger() {
     if (active_) {
-        std::cerr << '\n';
-    }
-    if (level_ == level::fatal) {
-        std::terminate();
+        auto const locking_enabled_for_this_transaction = locking_enabled_.load();
+
+        if (locking_enabled_for_this_transaction) {
+            mutex_.lock();
+        }
+        for (auto c : stream_.str()) {
+            switch (c) {
+            case '\0':
+            case '\r': {
+                // ignore null and carriage return
+                break;
+            }
+            case '\n': {
+                // append newline, add indentation for next line
+                std::cerr << "\n  ";
+                break;
+            }
+            default: {
+                std::cerr << c; // output the character
+            }
+            }
+        }
+        std::cerr << "\n";
+        if (locking_enabled_for_this_transaction) {
+            mutex_.unlock();
+        }
     }
 }
 
 template <typename T>
 inline auto logger::operator<<(T const& value) -> logger& {
     if (active_) {
-        std::cerr << value;
+        stream_ << value;
     }
     return *this;
+}
+
+inline auto debug() -> logger {
+    return logger(level::debug);
 }
 
 inline auto info() -> logger {
@@ -142,10 +171,6 @@ inline auto warning() -> logger {
 
 inline auto error() -> logger {
     return logger(level::error);
-}
-
-inline auto fatal() -> logger {
-    return logger(level::fatal);
 }
 
 inline void set_min_level(level l) {
